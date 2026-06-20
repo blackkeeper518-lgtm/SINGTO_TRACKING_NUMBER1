@@ -34,11 +34,11 @@
   <script type="text/babel">
     const { useState } = React;
 
-    const SUPABASE_URL = "https://supabase.co";
-    const SUPABASE_KEY = "sb_publishable__jf6STEu_EO57bk21V4MXw_MFLkBbHu";
+    const SUPABASE_URL = "https://xbwcuifizktwubsymscs.supabase.co";
+    const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhid2N1aWZpemt0d3Vic3ltc2NzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE4OTg1NjgsImV4cCI6MjA5NzQ3NDU2OH0.qD0Kc-XVjanJekwyp5Dh00MJKf6T76MC6YqBvgYfLvc";
     const MASTER_PASS = "1234";
 
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     function App() {
       const [activeTab, setActiveTab] = useState("tracking");
@@ -73,13 +73,23 @@
         setLoading(true);
         setTrackingData(null);
 
+                    setLoading(true);
+        setTrackingData(null);
+
         try {
+          // 🚀 ดึงข้อมูลตรงๆ จากตารางใหม่ (parcels) แบบปลอดภัย ไร้ภาษาไทยปน ป้องกันจอมืด 100%
           const { data, error } = await supabase
-            .rpc("get_parcel_by_phone", { search_phone: cleanPhone })
+            .from("parcels")
+            .select("customer, track, cod, is_phone_valid")
+            .eq("phone", cleanPhone)
+            .order("created_at", { ascending: false })
             .maybeSingle();
 
-          if (data) setTrackingData(data);
-          else alert("ไม่พบข้อมูลพัสดุในระบบ SINGTO STORE");
+          if (data) {
+            setTrackingData(data);
+          } else {
+            alert("ไม่พบข้อมูลพัสดุในระบบ SINGTO STORE");
+          }
           if (error) throw error;
         } catch (err) {
           console.error(err);
@@ -88,6 +98,7 @@
           setLoading(false);
         }
       };
+
 
       return (
         <main className="min-h-screen flex flex-col items-center justify-center p-4 relative">
